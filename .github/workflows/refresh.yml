@@ -1,0 +1,35 @@
+name: Refresh JMS Subscription
+
+on:
+  schedule:
+    # 每小时整点执行
+    - cron: "0 * * * *"
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch subscription
+        run: |
+          curl -sS --connect-timeout 15 --max-time 30 \
+            "https://jmssub.net/members/getsub.php?service=1368521&id=063fe3c5-d153-4f6b-a433-0bd7c42ec4d6" \
+            -o subscription.txt
+          echo "Downloaded $(wc -c < subscription.txt) bytes"
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "JMS Refresh Bot"
+          git config user.email "bot@jmssub.local"
+          git add subscription.txt
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "auto: refresh subscription $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+            echo "Updated!"
+          fi
