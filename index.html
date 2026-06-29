@@ -15,7 +15,12 @@ body{font:12px "SF Mono",Menlo,Consolas,"Courier New",monospace;background:var(-
 
 /* sidebar */
 .sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar);color:var(--sidebar-text);overflow-y:auto;font-size:12px;transition:background .2s}
-.sidebar-hdr{padding:8px 12px;font-size:11px;color:#fff;border-bottom:1px solid #555;background:#333}
+.sidebar-hdr{padding:0;border-bottom:1px solid #555;background:#333;text-align:center}
+.sidebar-hdr-inner{display:flex;align-items:center;justify-content:flex-start;padding:10px 14px;gap:10px}
+.logo-placeholder{width:32px;height:32px;border-radius:6px;background:#5a8fcf;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.logo-text{text-align:left}
+.logo-title{font-size:16px;font-weight:700;color:#fff;letter-spacing:.5px}
+.logo-sub{font-size:9px;color:#aaa;letter-spacing:1px;margin-top:1px}
 body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 .tree{padding:4px 0}
 .tree-section{padding:6px 12px 2px;font-size:10px;color:#777;text-transform:uppercase;letter-spacing:.5px}
@@ -31,6 +36,8 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 .topbar .right{display:flex;gap:12px;align-items:center;color:var(--dim)}
 .badge{padding:1px 6px;border-radius:2px;font-size:10px;font-weight:600}
 .badge-g{background:#e8f5e9;color:#2e7d32}.badge-y{background:#fff8e1;color:#f57f17}.badge-r{background:#ffebee;color:#c62828}
+.lang-btn{cursor:pointer;padding:1px 5px;border-radius:2px;font-size:11px;font-weight:600;border:1px solid var(--dim);color:var(--dim);user-select:none;line-height:1.4}
+.lang-btn:hover{background:rgba(128,128,128,.15)}
 .theme-btn{cursor:pointer;padding:2px 6px;border-radius:2px;font-size:12px;user-select:none}
 .theme-btn:hover{background:rgba(128,128,128,.15)}
 
@@ -73,7 +80,15 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 <body>
 
 <div class="sidebar">
-  <div class="sidebar-hdr">LuckyPanel</div>
+  <div class="sidebar-hdr">
+    <div class="sidebar-hdr-inner">
+      <div class="logo-placeholder" id="logoImg">LP</div>
+      <div class="logo-text">
+        <div class="logo-title">LuckyPanel</div>
+        <div class="logo-sub" id="logoSub">个人工作台</div>
+      </div>
+    </div>
+  </div>
   <div class="tree">
     <div class="tree-section">Overview</div>
     <div class="tree-item active" data-page="summary">Summary</div>
@@ -88,6 +103,7 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 <div class="topbar">
   <div class="path">server / <b id="crumb">Summary</b></div>
   <div class="right">
+    <span class="lang-btn" id="langBtn">中</span>
     <span class="theme-btn" id="themeBtn">☀️</span>
     <span id="tbadge" class="badge badge-g">OK</span>
     <span id="ttime">--</span>
@@ -100,27 +116,27 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 <div class="page active" id="page-summary">
   <div class="row">
     <div class="panel">
-      <div class="panel-hdr">Subscription <span id="sub-st" class="st st-ok">--</span></div>
+      <div class="panel-hdr"><span data-t="subscription">Subscription</span> <span id="sub-st" class="st st-ok">--</span></div>
       <div class="panel-body"><table class="kv" id="sub-kv"><tr><td colspan="2">loading...</td></tr></table></div>
     </div>
     <div class="panel">
-      <div class="panel-hdr">API Router</div>
+      <div class="panel-hdr"><span data-t="apiRouter">API Router</span></div>
       <div class="panel-body"><table class="kv" id="api-kv"><tr><td colspan="2">loading...</td></tr></table></div>
     </div>
   </div>
   <div class="row">
     <div class="panel">
-      <div class="panel-hdr">Refresh History</div>
+      <div class="panel-hdr"><span data-t="refreshH">Refresh History</span></div>
       <div class="chart" id="chart1"></div>
       <div class="chart-note">green=ok red=fail | last 50</div>
     </div>
     <div class="panel">
-      <div class="panel-hdr">Model Usage</div>
+      <div class="panel-hdr"><span data-t="modelU">Model Usage</span></div>
       <div class="panel-body" style="padding:4px"><div class="chart-box" id="pieChart"></div></div>
     </div>
   </div>
   <div class="panel">
-    <div class="panel-hdr">Call Trend</div>
+    <div class="panel-hdr"><span data-t="callT">Call Trend</span></div>
     <div class="panel-body" style="padding:4px"><div class="chart-box" id="trendChart"></div></div>
   </div>
 </div>
@@ -128,7 +144,7 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 <!-- Subscription -->
 <div class="page" id="page-sub">
   <div class="panel">
-    <div class="panel-hdr">Subscription Status</div>
+    <div class="panel-hdr"><span data-t="subStatus">Subscription Status</span></div>
     <div class="panel-body"><table class="kv" id="sub-detail"><tr><td colspan="2">loading...</td></tr></table></div>
   </div>
   <div class="panel">
@@ -142,7 +158,7 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 <div class="page" id="page-api">
   <div class="row">
     <div class="panel">
-      <div class="panel-hdr">Routes</div>
+      <div class="panel-hdr"><span data-t="routes">Routes</span></div>
       <div class="panel-body"><table class="kv">
         <tr><td>deepseek</td><td>api.deepseek.com/anthropic</td></tr>
         <tr><td>qwen</td><td>dashscope.aliyuncs.com</td></tr>
@@ -151,24 +167,24 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
       </table></div>
     </div>
     <div class="panel">
-      <div class="panel-hdr">Stats</div>
+      <div class="panel-hdr"><span data-t="stats">Stats</span></div>
       <div class="panel-body"><table class="kv" id="api-detail"><tr><td colspan="2">loading...</td></tr></table></div>
     </div>
   </div>
   <div class="row">
     <div class="panel">
-      <div class="panel-hdr">Status Code Distribution</div>
+      <div class="panel-hdr"><span data-t="statusDist">Status Code</span></div>
       <div class="panel-body" style="padding:4px"><div class="chart-box" id="statusChart"></div></div>
     </div>
     <div class="panel">
-      <div class="panel-hdr">Response Time</div>
+      <div class="panel-hdr"><span data-t="respTime">Response Time</span></div>
       <div class="panel-body" style="padding:4px"><div class="chart-box" id="latencyChart"></div></div>
     </div>
   </div>
   <div class="panel">
-    <div class="panel-hdr">Call Log</div>
+    <div class="panel-hdr"><span data-t="callLog">Call Log</span></div>
     <div class="panel-body" style="overflow-x:auto"><table class="log">
-      <thead><tr><th>time</th><th>model</th><th>route</th><th>status</th><th>ms</th><th>tokens</th></tr></thead>
+      <thead><tr><th><span data-t="time">time</span></th><th><span data-t="model">model</span></th><th><span data-t="route">route</span></th><th><span data-t="status">status</span></th><th><span data-t="ms">ms</span></th><th><span data-t="tokens">tokens</span></th></tr></thead>
       <tbody id="api-log"><tr><td colspan="6">no data</td></tr></tbody>
     </table></div>
   </div>
@@ -177,9 +193,9 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 <!-- Logs -->
 <div class="page" id="page-logs">
   <div class="panel">
-    <div class="panel-hdr">Event Log</div>
+    <div class="panel-hdr"><span data-t="eventLog">Event Log</span></div>
     <div class="panel-body" style="overflow-x:auto"><table class="log">
-      <thead><tr><th>time</th><th>type</th><th>detail</th><th>status</th></tr></thead>
+      <thead><tr><th><span data-t="time">time</span></th><th><span data-t="type">type</span></th><th><span data-t="detail">detail</span></th><th><span data-t="status">status</span></th></tr></thead>
       <tbody id="all-log"><tr><td colspan="4">loading...</td></tr></tbody>
     </table></div>
   </div>
@@ -191,6 +207,87 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 var API_URL="https://panel-dashboard-edhejzoify.cn-hangzhou.fcapp.run/api/stats";
 var D={sub:{},api:{}};
 var charts={};
+var lang=localStorage.getItem('lucky-lang')||'zh';
+
+var LANG={
+  zh:{
+    overview:'概况',services:'服务',system:'系统',sub:'订阅服务','api':'API 路由',
+    summary:'总览',logs:'日志',
+    ok:'正常',delay:'延迟',down:'异常',
+    subscription:'订阅状态',apiRouter:'API 路由',
+    refreshH:'刷新历史',modelU:'使用统计',callT:'调用趋势',
+    subStatus:'订阅状态',routes:'路由配置',stats:'统计',
+    statusDist:'状态码分布',respTime:'响应耗时',callLog:'调用日志',eventLog:'事件日志',
+    subDetail:'订阅详情',
+    nodes:'节点数','last refresh':'最近刷新','file size':'文件大小',
+    totalCalls:'总调用次数',lastModel:'最近模型',lastRoute:'最近路由','last call':'最近调用',
+    active:'运行中',error:'错误','no data':'暂无数据',loading:'加载中...',
+    'green=ok red=fail':'绿=成功 红=失败',
+    server:'服务器',
+    deepseek:'DeepSeek',qwen:'Qwen',rule:'路由规则',auth:'认证方式',
+    time:'时间',model:'模型',route:'路由',status:'状态',ms:'耗时',tokens:'令牌',
+    type:'类型',detail:'详情',
+    success:'成功',fail:'失败',
+    subTitle:'个人工作台',
+    last50:'最近 50 次',
+    successRate:'成功率',
+  },
+  en:{
+    overview:'Overview',services:'Services',system:'System',sub:'Subscription','api':'API Router',
+    summary:'Summary',logs:'Logs',
+    ok:'OK',delay:'DELAY',down:'DOWN',
+    subscription:'Subscription',apiRouter:'API Router',
+    refreshH:'Refresh History',modelU:'Model Usage',callT:'Call Trend',
+    subStatus:'Subscription Status',routes:'Routes',stats:'Stats',
+    statusDist:'Status Code',respTime:'Response Time',callLog:'Call Log',eventLog:'Event Log',
+    subDetail:'Subscription Detail',
+    nodes:'Nodes','last refresh':'Last Refresh','file size':'File Size',
+    totalCalls:'Total Calls',lastModel:'Last Model',lastRoute:'Last Route','last call':'Last Call',
+    active:'Active',error:'Error','no data':'No Data',loading:'Loading...',
+    'green=ok red=fail':'green=ok red=fail',
+    server:'Server',
+    deepseek:'DeepSeek',qwen:'Qwen',rule:'Rule',auth:'Auth',
+    time:'Time',model:'Model',route:'Route',status:'Status',ms:'ms',tokens:'Tokens',
+    type:'Type',detail:'Detail',
+    success:'Success',fail:'Failed',
+    subTitle:'Personal Workspace',
+    last50:'last 50',
+    successRate:'Success Rate',
+  }
+};
+
+function t(k){var m=LANG[lang];return m&&m[k]!==undefined?m[k]:k}
+function toggleLang(){
+  lang=lang==='zh'?'en':'zh';
+  localStorage.setItem('lucky-lang',lang);
+  document.getElementById('langBtn').textContent=lang==='zh'?'EN':'中';
+  document.getElementById('logoSub').textContent=t('subTitle');
+  applyLangStatic();
+  Object.values(charts).forEach(function(c){if(c)c.dispose()});
+  charts={};
+  render();
+}
+function applyLangStatic(){
+  // panel headers with data-t attribute
+  document.querySelectorAll('[data-t]').forEach(function(el){el.textContent=t(el.dataset.t)});
+  // chart notes
+  var notes=document.querySelectorAll('.chart-note');
+  if(notes[0])notes[0].textContent=t('green=ok red=fail')+' | '+t('last50');
+  if(notes[1])notes[1].textContent=t('green=ok red=fail');
+  // nav section headers + breadcrumb
+  var activeItem=document.querySelector('.tree-item.active');
+  if(activeItem)document.getElementById('crumb').textContent=t(activeItem.dataset.page);
+  document.querySelectorAll('.tree-section').forEach(function(el){
+    var key=el.textContent.trim().toLowerCase();
+    if(LANG.zh[key]||LANG.en[key])el.textContent=t(key);
+  });
+  // nav item text
+  document.querySelectorAll('.tree-item').forEach(function(el){
+    var key=el.dataset.page;
+    var tn=el.childNodes[el.childNodes.length-1];
+    if(tn&&tn.nodeType===3)tn.textContent=t(key);
+  });
+}
 
 // ── Navigation ──
 document.querySelectorAll('.tree-item').forEach(function(el){
@@ -204,6 +301,14 @@ document.querySelectorAll('.tree-item').forEach(function(el){
     setTimeout(function(){resizeCharts()},50);
   };
 });
+
+// ── Language init ──
+(function initLang(){
+  document.getElementById('langBtn').textContent=lang==='zh'?'EN':'中';
+  document.getElementById('logoSub').textContent=t('subTitle');
+  applyLangStatic();
+})();
+document.getElementById('langBtn').onclick=toggleLang;
 
 // ── Dark mode toggle ──
 (function initTheme(){
@@ -222,7 +327,7 @@ document.getElementById('themeBtn').onclick=function(){
 };
 
 // ── Helpers ──
-function ago(s){if(!s)return'--';var m=Math.round((Date.now()-new Date(s).getTime())/60000);if(m<1)return'now';if(m<60)return m+'m';var h=Math.round(m/60);if(h<24)return h+'h';return Math.round(h/24)+'d'}
+function ago(s){if(!s)return'--';var m=Math.round((Date.now()-new Date(s).getTime())/60000);if(m<1)return t('now');if(m<60)return m+t('m');var h=Math.round(m/60);if(h<24)return h+t('h');return Math.round(h/24)+t('d')}
 function fmtB(b){if(!b)return'--';return b<1024?b+'B':(b/1024).toFixed(1)+'KB'}
 function darkMode(){return document.body.classList.contains('dark')}
 function chartTheme(){return darkMode()?{bg:'transparent',text:'#999'}:{bg:'transparent',text:'#999'}}
@@ -252,7 +357,7 @@ function render(){
 
   // topbar
   var tb=document.getElementById('tbadge');
-  if(age>90){tb.className='badge badge-r';tb.textContent='DOWN'}else if(age>45){tb.className='badge badge-y';tb.textContent='DELAY'}else{tb.className='badge badge-g';tb.textContent='OK'}
+  if(age>90){tb.className='badge badge-r';tb.textContent=t('down')}else if(age>45){tb.className='badge badge-y';tb.textContent=t('delay')}else{tb.className='badge badge-g';tb.textContent=t('ok')}
   document.getElementById('ttime').textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false});
 
   // nav
@@ -262,24 +367,24 @@ function render(){
   // subscription status
   var sst=document.getElementById('sub-st');
   sst.className='st '+(s.last_success?'st-ok':'st-err');
-  sst.textContent=s.last_success?'active':'error';
+  sst.textContent=s.last_success?t('active'):t('error');
   document.getElementById('sub-kv').innerHTML=
-    '<tr><td>nodes</td><td>'+(s.node_count||0)+'</td></tr>'+
-    '<tr><td>last refresh</td><td>'+ago(s.last_refresh)+'</td></tr>'+
-    '<tr><td>file size</td><td>'+fmtB(s.file_size)+'</td></tr>';
+    '<tr><td>'+t('nodes')+'</td><td>'+(s.node_count||0)+'</td></tr>'+
+    '<tr><td>'+t('last refresh')+'</td><td>'+ago(s.last_refresh)+'</td></tr>'+
+    '<tr><td>'+t('file size')+'</td><td>'+fmtB(s.file_size)+'</td></tr>';
 
   // api kv
   document.getElementById('api-kv').innerHTML=
-    '<tr><td>total calls</td><td>'+(a.total_calls||0)+'</td></tr>'+
-    '<tr><td>last model</td><td>'+(a.last_model||'--')+'</td></tr>'+
-    '<tr><td>last route</td><td>'+(a.last_route||'--')+'</td></tr>'+
-    '<tr><td>last call</td><td>'+ago(a.last_call)+'</td></tr>';
+    '<tr><td>'+t('totalCalls')+'</td><td>'+(a.total_calls||0)+'</td></tr>'+
+    '<tr><td>'+t('lastModel')+'</td><td>'+(a.last_model||'--')+'</td></tr>'+
+    '<tr><td>'+t('lastRoute')+'</td><td>'+(a.last_route||'--')+'</td></tr>'+
+    '<tr><td>'+t('last call')+'</td><td>'+ago(a.last_call)+'</td></tr>';
 
   // mini chart (refresh history)
   var hist=(s.history||[]).slice(-50),mx=Math.max.apply(null,hist.map(function(h){return h.nodes||0}).concat([1]));
   function mkC(id,ht){
     var el=document.getElementById(id);
-    if(!el||!hist.length){if(el)el.innerHTML='<div style="padding:8px;color:var(--dim);font-size:11px">no data</div>';return}
+    if(!el||!hist.length){if(el)el.innerHTML='<div style="padding:8px;color:var(--dim);font-size:11px">'+t('no data')+'</div>';return}
     el.innerHTML=hist.map(function(h){
       var px=Math.max(4,Math.round((h.nodes||0)/mx*ht));
       return '<div class="b '+(h.success?'bg':'br')+'" style="height:'+px+'px" title="'+(h.time||'')+'"></div>';
@@ -327,18 +432,18 @@ function render(){
 
   // sub detail page
   document.getElementById('sub-detail').innerHTML=
-    '<tr><td>last refresh</td><td>'+(s.last_refresh||'--')+'</td></tr>'+
-    '<tr><td>status</td><td><span class="st '+(s.last_success?'st-ok':'st-err')+'">'+(s.last_success?'success':'fail')+'</span></td></tr>'+
-    '<tr><td>nodes</td><td>'+(s.node_count||0)+'</td></tr>'+
-    '<tr><td>file size</td><td>'+fmtB(s.file_size)+'</td></tr>'+
-    '<tr><td>success rate</td><td>'+(hist.length?Math.round(hist.filter(function(h){return h.success}).length/hist.length*100):0)+'%</td></tr>';
+    '<tr><td>'+t('last refresh')+'</td><td>'+(s.last_refresh||'--')+'</td></tr>'+
+    '<tr><td>'+t('status')+'</td><td><span class="st '+(s.last_success?'st-ok':'st-err')+'">'+(s.last_success?t('success'):t('fail'))+'</span></td></tr>'+
+    '<tr><td>'+t('nodes')+'</td><td>'+(s.node_count||0)+'</td></tr>'+
+    '<tr><td>'+t('file size')+'</td><td>'+fmtB(s.file_size)+'</td></tr>'+
+    '<tr><td>'+t('successRate')+'</td><td>'+(hist.length?Math.round(hist.filter(function(h){return h.success}).length/hist.length*100):0)+'%</td></tr>';
 
   // api detail
   document.getElementById('api-detail').innerHTML=
-    '<tr><td>total</td><td>'+(a.total_calls||0)+'</td></tr>'+
-    '<tr><td>last call</td><td>'+(a.last_call||'--')+'</td></tr>'+
-    '<tr><td>last model</td><td>'+(a.last_model||'--')+'</td></tr>'+
-    '<tr><td>last route</td><td>'+(a.last_route||'--')+'</td></tr>';
+    '<tr><td>'+t('totalCalls')+'</td><td>'+(a.total_calls||0)+'</td></tr>'+
+    '<tr><td>'+t('last call')+'</td><td>'+(a.last_call||'--')+'</td></tr>'+
+    '<tr><td>'+t('lastModel')+'</td><td>'+(a.last_model||'--')+'</td></tr>'+
+    '<tr><td>'+t('lastRoute')+'</td><td>'+(a.last_route||'--')+'</td></tr>';
 
   // ── ECharts: Status Code Distribution ──
   if(ah.length){
@@ -388,7 +493,7 @@ function render(){
     return '<tr><td style="color:var(--dim)">'+(h.time||'--')+'</td><td>'+(h.model||'?')+'</td>'+
       '<td><span class="st '+(h.route==='deepseek'?'st-info':'st-warn')+'">'+(h.route||'--')+'</span></td>'+
       '<td>'+st+'</td><td>'+(h.ms||0)+'</td><td>'+(h.in||0)+'/'+(h.out||0)+'</td></tr>';
-  }).join(''):'<tr><td colspan="6">no data</td></tr>';
+  }).join(''):'<tr><td colspan="6">'+t('no data')+'</td></tr>';
 
   // all events log
   var all=[];
@@ -396,11 +501,11 @@ function render(){
   (s.history||[]).forEach(function(h){all.push({type:'SUB',time:h.time,d:h.msg||'--',ok:h.success})});
   all.sort(function(a,b){return(b.time||'').localeCompare(a.time||'')});
   document.getElementById('all-log').innerHTML=all.length?all.slice(0,80).map(function(e){
-    var st=e.ok?'<span class="st st-ok">ok</span>':'<span class="st st-err">err</span>';
+    var st=e.ok?'<span class="st st-ok">'+t('ok')+'</span>':'<span class="st st-err">'+t('fail')+'</span>';
     return '<tr><td style="color:var(--dim)">'+(e.time||'--')+'</td>'+
       '<td><span class="st '+(e.type==='API'?'st-info':'st-warn')+'">'+e.type+'</span></td>'+
       '<td>'+e.d+'</td><td>'+st+'</td></tr>';
-  }).join(''):'<tr><td colspan="4">no data</td></tr>';
+  }).join(''):'<tr><td colspan="4">'+t('no data')+'</td></tr>';
 }
 
 // ── Data load ──
