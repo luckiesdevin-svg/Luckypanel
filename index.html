@@ -4,12 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LuckyPanel</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--sidebar-w:200px;--topbar-h:36px;--bg:#f0f0f0;--sidebar:#3b3b3b;--sidebar-text:#ccc;--sidebar-active:#5a8fcf;--border:#d0d0d0;--text:#222;--dim:#888}
+
+/* light (default) */
+:root{--sidebar-w:200px;--topbar-h:36px;--bg:#f0f0f0;--sidebar:#3b3b3b;--sidebar-text:#ccc;--sidebar-active:#5a8fcf;--border:#d0d0d0;--text:#222;--dim:#888;--surface:#fff;--surface2:#fafafa;--green:#4a9;--red:#c44;--yellow:#ca3;--blue:#48a;--hover:#f8f8ff}
+body.dark{--bg:#1a1a1a;--sidebar:#222;--sidebar-text:#aaa;--sidebar-active:#4a7fbf;--border:#333;--text:#d0d0d0;--dim:#777;--surface:#2a2a2a;--surface2:#333;--hover:#2a2a35}
 body{font:12px "SF Mono",Menlo,Consolas,"Courier New",monospace;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar);color:var(--sidebar-text);overflow-y:auto;font-size:12px}
+
+/* sidebar */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar);color:var(--sidebar-text);overflow-y:auto;font-size:12px;transition:background .2s}
 .sidebar-hdr{padding:8px 12px;font-size:11px;color:#fff;border-bottom:1px solid #555;background:#333}
+body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 .tree{padding:4px 0}
 .tree-section{padding:6px 12px 2px;font-size:10px;color:#777;text-transform:uppercase;letter-spacing:.5px}
 .tree-item{padding:4px 12px 4px 20px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
@@ -17,35 +24,54 @@ body{font:12px "SF Mono",Menlo,Consolas,"Courier New",monospace;background:var(-
 .tree-item.active{background:var(--sidebar-active);color:#fff}
 .ind{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .ind-g{background:#5b5}.ind-r{background:#c44}.ind-y{background:#ca3}
-.topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:11px}
+
+/* topbar */
+.topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:11px;transition:background .2s}
 .topbar .path{color:var(--dim)}.topbar .path b{color:var(--text);font-weight:600}
 .topbar .right{display:flex;gap:12px;align-items:center;color:var(--dim)}
 .badge{padding:1px 6px;border-radius:2px;font-size:10px;font-weight:600}
 .badge-g{background:#e8f5e9;color:#2e7d32}.badge-y{background:#fff8e1;color:#f57f17}.badge-r{background:#ffebee;color:#c62828}
+.theme-btn{cursor:pointer;padding:2px 6px;border-radius:2px;font-size:12px;user-select:none}
+.theme-btn:hover{background:rgba(128,128,128,.15)}
+
+/* content */
 .main{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);height:calc(100vh - var(--topbar-h));overflow-y:auto;padding:12px}
 .page{display:none}.page.active{display:block}
-.panel{background:#fff;border:1px solid var(--border);margin-bottom:10px}
-.panel-hdr{padding:6px 10px;background:#fafafa;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:#555;display:flex;justify-content:space-between;align-items:center}
+
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--border);margin-bottom:10px;transition:background .2s}
+.panel-hdr{padding:6px 10px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:#555;display:flex;justify-content:space-between;align-items:center;transition:background .2s}
 .panel-body{padding:0}
 .kv{width:100%;border-collapse:collapse}
-.kv td{padding:4px 10px;border-bottom:1px solid #eee;font-size:12px}
+.kv td{padding:4px 10px;border-bottom:1px solid var(--border);font-size:12px;transition:border-color .2s}
 .kv td:first-child{color:var(--dim);width:140px;white-space:nowrap}
-.kv tr:last-child td{border-bottom:none}
+
+/* tags */
 .st{font-size:10px;font-weight:600;padding:1px 5px;border-radius:2px;display:inline-block}
 .st-ok{background:#e8f5e9;color:#2e7d32}.st-err{background:#ffebee;color:#c62828}.st-warn{background:#fff8e1;color:#f57f17}.st-info{background:#e3f2fd;color:#1565c0}
+
+/* charts */
 .chart{display:flex;gap:2px;align-items:flex-end;height:40px;padding:8px 10px}
 .chart .b{flex:1;min-width:3px;border-radius:1px 1px 0 0}
-.chart .bg{background:#5b5}.chart .br{background:#c44}
-.chart-note{padding:2px 10px 6px;font-size:10px;color:#999}
+.chart .bg{background:var(--green)}.chart .br{background:var(--red)}
+.chart-note{padding:2px 10px 6px;font-size:10px;color:var(--dim)}
+.chart-box{width:100%;height:200px}
+
+/* logs */
 .log{width:100%;border-collapse:collapse}
-.log th{text-align:left;padding:4px 8px;font-size:10px;color:#888;border-bottom:1px solid var(--border);background:#fafafa;font-weight:500}
-.log td{padding:3px 8px;font-size:11px;border-bottom:1px solid #f0f0f0}
-.log tr:hover td{background:#f8f8ff}
+.log th{text-align:left;padding:4px 8px;font-size:10px;color:var(--dim);border-bottom:1px solid var(--border);background:var(--surface2);font-weight:500}
+.log td{padding:3px 8px;font-size:11px;border-bottom:1px solid var(--border)}
+.log tr:hover td{background:var(--hover)}
+
+/* layout */
 .row{display:flex;gap:10px;margin-bottom:10px}.row>.panel{flex:1;margin-bottom:0}
+
+/* responsive */
 @media(max-width:768px){:root{--sidebar-w:0px}.sidebar{display:none}.row{flex-direction:column}}
 </style>
 </head>
 <body>
+
 <div class="sidebar">
   <div class="sidebar-hdr">LuckyPanel</div>
   <div class="tree">
@@ -58,11 +84,19 @@ body{font:12px "SF Mono",Menlo,Consolas,"Courier New",monospace;background:var(-
     <div class="tree-item" data-page="logs">Logs</div>
   </div>
 </div>
+
 <div class="topbar">
   <div class="path">server / <b id="crumb">Summary</b></div>
-  <div class="right"><span id="tbadge" class="badge badge-g">OK</span><span id="ttime">--</span></div>
+  <div class="right">
+    <span class="theme-btn" id="themeBtn">☀️</span>
+    <span id="tbadge" class="badge badge-g">OK</span>
+    <span id="ttime">--</span>
+  </div>
 </div>
+
 <div class="main">
+
+<!-- Summary -->
 <div class="page active" id="page-summary">
   <div class="row">
     <div class="panel">
@@ -74,16 +108,24 @@ body{font:12px "SF Mono",Menlo,Consolas,"Courier New",monospace;background:var(-
       <div class="panel-body"><table class="kv" id="api-kv"><tr><td colspan="2">loading...</td></tr></table></div>
     </div>
   </div>
-  <div class="panel">
-    <div class="panel-hdr">Refresh History</div>
-    <div class="chart" id="chart1"></div>
-    <div class="chart-note">green=ok red=fail | last 50</div>
+  <div class="row">
+    <div class="panel">
+      <div class="panel-hdr">Refresh History</div>
+      <div class="chart" id="chart1"></div>
+      <div class="chart-note">green=ok red=fail | last 50</div>
+    </div>
+    <div class="panel">
+      <div class="panel-hdr">Model Usage</div>
+      <div class="panel-body" style="padding:4px"><div class="chart-box" id="pieChart"></div></div>
+    </div>
   </div>
   <div class="panel">
-    <div class="panel-hdr">Model Usage</div>
-    <div class="panel-body"><table class="kv" id="model-kv"><tr><td colspan="2">no data</td></tr></table></div>
+    <div class="panel-hdr">Call Trend</div>
+    <div class="panel-body" style="padding:4px"><div class="chart-box" id="trendChart"></div></div>
   </div>
 </div>
+
+<!-- Subscription -->
 <div class="page" id="page-sub">
   <div class="panel">
     <div class="panel-hdr">Subscription Status</div>
@@ -95,6 +137,8 @@ body{font:12px "SF Mono",Menlo,Consolas,"Courier New",monospace;background:var(-
     <div class="chart-note">green=ok red=fail</div>
   </div>
 </div>
+
+<!-- API Router -->
 <div class="page" id="page-api">
   <div class="row">
     <div class="panel">
@@ -111,6 +155,16 @@ body{font:12px "SF Mono",Menlo,Consolas,"Courier New",monospace;background:var(-
       <div class="panel-body"><table class="kv" id="api-detail"><tr><td colspan="2">loading...</td></tr></table></div>
     </div>
   </div>
+  <div class="row">
+    <div class="panel">
+      <div class="panel-hdr">Status Code Distribution</div>
+      <div class="panel-body" style="padding:4px"><div class="chart-box" id="statusChart"></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-hdr">Response Time</div>
+      <div class="panel-body" style="padding:4px"><div class="chart-box" id="latencyChart"></div></div>
+    </div>
+  </div>
   <div class="panel">
     <div class="panel-hdr">Call Log</div>
     <div class="panel-body" style="overflow-x:auto"><table class="log">
@@ -119,6 +173,8 @@ body{font:12px "SF Mono",Menlo,Consolas,"Courier New",monospace;background:var(-
     </table></div>
   </div>
 </div>
+
+<!-- Logs -->
 <div class="page" id="page-logs">
   <div class="panel">
     <div class="panel-hdr">Event Log</div>
@@ -128,10 +184,15 @@ body{font:12px "SF Mono",Menlo,Consolas,"Courier New",monospace;background:var(-
     </table></div>
   </div>
 </div>
+
 </div>
+
 <script>
 var API_URL="https://panel-dashboard-edhejzoify.cn-hangzhou.fcapp.run/api/stats";
 var D={sub:{},api:{}};
+var charts={};
+
+// ── Navigation ──
 document.querySelectorAll('.tree-item').forEach(function(el){
   el.onclick=function(){
     document.querySelectorAll('.tree-item').forEach(function(n){n.classList.remove('active')});
@@ -140,39 +201,217 @@ document.querySelectorAll('.tree-item').forEach(function(el){
     document.querySelectorAll('.page').forEach(function(pg){pg.classList.remove('active')});
     document.getElementById('page-'+p).classList.add('active');
     document.getElementById('crumb').textContent=el.textContent.trim();
+    setTimeout(function(){resizeCharts()},50);
   };
 });
+
+// ── Dark mode toggle ──
+(function initTheme(){
+  var dark=localStorage.getItem('lucky-dark')==='1';
+  if(dark)document.body.classList.add('dark');
+  document.getElementById('themeBtn').textContent=dark?'🌙':'☀️';
+})();
+document.getElementById('themeBtn').onclick=function(){
+  document.body.classList.toggle('dark');
+  var dark=document.body.classList.contains('dark');
+  this.textContent=dark?'🌙':'☀️';
+  localStorage.setItem('lucky-dark',dark?'1':'0');
+  Object.values(charts).forEach(function(c){if(c)c.dispose()});
+  charts={};
+  render();
+};
+
+// ── Helpers ──
 function ago(s){if(!s)return'--';var m=Math.round((Date.now()-new Date(s).getTime())/60000);if(m<1)return'now';if(m<60)return m+'m';var h=Math.round(m/60);if(h<24)return h+'h';return Math.round(h/24)+'d'}
 function fmtB(b){if(!b)return'--';return b<1024?b+'B':(b/1024).toFixed(1)+'KB'}
+function darkMode(){return document.body.classList.contains('dark')}
+function chartTheme(){return darkMode()?{bg:'transparent',text:'#999'}:{bg:'transparent',text:'#999'}}
+function resizeCharts(){Object.values(charts).forEach(function(c){if(c)c.resize()})}
+
+function makeChart(id,opt){
+  if(charts[id])charts[id].dispose();
+  var el=document.getElementById(id);
+  if(!el||el.offsetWidth===0)return null;
+  var c=echarts.init(el, darkMode()?'dark':null);
+  lightOpt(opt);
+  c.setOption(opt);
+  charts[id]=c;
+  return c;
+}
+function lightOpt(o){
+  // ECharts light theme defaults (dark theme uses built-in dark)
+  if(darkMode())return;
+  if(o.color)return; // custom color
+  o.color=['#5470c6','#91cc75','#fac858','#ee6666','#73c0de','#3ba272','#fc8452','#9a60b4'];
+}
+
+// ── Render ──
 function render(){
   var s=D.sub||{},a=D.api||{};
   var age=s.last_refresh?Math.round((Date.now()-new Date(s.last_refresh).getTime())/60000):999;
+
+  // topbar
   var tb=document.getElementById('tbadge');
   if(age>90){tb.className='badge badge-r';tb.textContent='DOWN'}else if(age>45){tb.className='badge badge-y';tb.textContent='DELAY'}else{tb.className='badge badge-g';tb.textContent='OK'}
   document.getElementById('ttime').textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false});
+
+  // nav
   document.getElementById('nav-sub').className='ind '+(s.last_success?'ind-g':'ind-r');
   document.getElementById('nav-api').className='ind '+(a.total_calls>0?'ind-g':'ind-y');
-  var sst=document.getElementById('sub-st');sst.className='st '+(s.last_success?'st-ok':'st-err');sst.textContent=s.last_success?'active':'error';
-  document.getElementById('sub-kv').innerHTML='<tr><td>nodes</td><td>'+(s.node_count||0)+'</td></tr><tr><td>last refresh</td><td>'+ago(s.last_refresh)+'</td></tr><tr><td>file size</td><td>'+fmtB(s.file_size)+'</td></tr>';
-  document.getElementById('api-kv').innerHTML='<tr><td>total calls</td><td>'+(a.total_calls||0)+'</td></tr><tr><td>last model</td><td>'+(a.last_model||'--')+'</td></tr><tr><td>last route</td><td>'+(a.last_route||'--')+'</td></tr><tr><td>last call</td><td>'+ago(a.last_call)+'</td></tr>';
+
+  // subscription status
+  var sst=document.getElementById('sub-st');
+  sst.className='st '+(s.last_success?'st-ok':'st-err');
+  sst.textContent=s.last_success?'active':'error';
+  document.getElementById('sub-kv').innerHTML=
+    '<tr><td>nodes</td><td>'+(s.node_count||0)+'</td></tr>'+
+    '<tr><td>last refresh</td><td>'+ago(s.last_refresh)+'</td></tr>'+
+    '<tr><td>file size</td><td>'+fmtB(s.file_size)+'</td></tr>';
+
+  // api kv
+  document.getElementById('api-kv').innerHTML=
+    '<tr><td>total calls</td><td>'+(a.total_calls||0)+'</td></tr>'+
+    '<tr><td>last model</td><td>'+(a.last_model||'--')+'</td></tr>'+
+    '<tr><td>last route</td><td>'+(a.last_route||'--')+'</td></tr>'+
+    '<tr><td>last call</td><td>'+ago(a.last_call)+'</td></tr>';
+
+  // mini chart (refresh history)
   var hist=(s.history||[]).slice(-50),mx=Math.max.apply(null,hist.map(function(h){return h.nodes||0}).concat([1]));
-  function mkC(id,ht){var el=document.getElementById(id);if(!el||!hist.length){if(el)el.innerHTML='<div style="padding:8px;color:#999;font-size:11px">no data</div>';return}
-    el.innerHTML=hist.map(function(h){var px=Math.max(4,Math.round((h.nodes||0)/mx*ht));return'<div class="b '+(h.success?'bg':'br')+'" style="height:'+px+'px" title="'+(h.time||'')+'"></div>'}).join('')}
+  function mkC(id,ht){
+    var el=document.getElementById(id);
+    if(!el||!hist.length){if(el)el.innerHTML='<div style="padding:8px;color:var(--dim);font-size:11px">no data</div>';return}
+    el.innerHTML=hist.map(function(h){
+      var px=Math.max(4,Math.round((h.nodes||0)/mx*ht));
+      return '<div class="b '+(h.success?'bg':'br')+'" style="height:'+px+'px" title="'+(h.time||'')+'"></div>';
+    }).join('');
+  }
   mkC('chart1',40);mkC('chart2',60);
-  var models=a.by_model||{},keys=Object.keys(models);
-  if(keys.length){var tot=keys.reduce(function(s,k){return s+models[k]},0);document.getElementById('model-kv').innerHTML=keys.map(function(k){return'<tr><td>'+k+'</td><td>'+models[k]+' ('+Math.round(models[k]/tot*100)+'%)</td></tr>'}).join('')}
-  document.getElementById('sub-detail').innerHTML='<tr><td>last refresh</td><td>'+(s.last_refresh||'--')+'</td></tr><tr><td>status</td><td><span class="st '+(s.last_success?'st-ok':'st-err')+'">'+(s.last_success?'success':'fail')+'</span></td></tr><tr><td>nodes</td><td>'+(s.node_count||0)+'</td></tr><tr><td>file size</td><td>'+fmtB(s.file_size)+'</td></tr><tr><td>success rate</td><td>'+(hist.length?Math.round(hist.filter(function(h){return h.success}).length/hist.length*100):0)+'%</td></tr>';
-  document.getElementById('api-detail').innerHTML='<tr><td>total</td><td>'+(a.total_calls||0)+'</td></tr><tr><td>last call</td><td>'+(a.last_call||'--')+'</td></tr><tr><td>last model</td><td>'+(a.last_model||'--')+'</td></tr><tr><td>last route</td><td>'+(a.last_route||'--')+'</td></tr>';
-  var ah=(a.history||[]).slice().reverse().slice(0,50);
-  document.getElementById('api-log').innerHTML=ah.length?ah.map(function(h){var st=h.status===200?'<span class="st st-ok">200</span>':'<span class="st st-err">'+h.status+'</span>';return'<tr><td style="color:#888">'+(h.time||'--')+'</td><td>'+(h.model||'?')+'</td><td><span class="st '+(h.route==='deepseek'?'st-info':'st-warn')+'">'+(h.route||'--')+'</span></td><td>'+st+'</td><td>'+(h.ms||0)+'</td><td>'+(h.in||0)+'/'+(h.out||0)+'</td></tr>'}).join(''):'<tr><td colspan="6">no data</td></tr>';
+
+  // ── ECharts: Model Pie ──
+  var models=a.by_model||{},mKeys=Object.keys(models);
+  if(mKeys.length){
+    var pieData=mKeys.map(function(k){return{name:k,value:models[k]}});
+    var pieOpt={
+      tooltip:{trigger:'item'},
+      series:[{type:'pie',radius:['30%','60%'],center:['50%','55%'],
+        label:{show:true,formatter:'{b}: {c}',fontSize:11},
+        data:pieData,emphasis:{itemStyle:{shadowBlur:10,shadowOffsetX:0,shadowColor:'rgba(0,0,0,0.5)'}}}]
+    };
+    makeChart('pieChart',pieOpt);
+  } else {
+    if(charts.pieChart){charts.pieChart.dispose();delete charts.pieChart}
+  }
+
+  // ── ECharts: Call Trend (by hour) ──
+  var ah=a.history||[];
+  if(ah.length){
+    // group by hour
+    var hourMap={};
+    ah.forEach(function(h){
+      var hour=(h.time||'').substring(0,13);
+      hourMap[hour]=(hourMap[hour]||0)+1;
+    });
+    var sortedH=Object.keys(hourMap).sort();
+    var trendOpt={
+      tooltip:{trigger:'axis'},
+      xAxis:{type:'category',data:sortedH,axisLabel:{rotate:45,fontSize:10}},
+      yAxis:{type:'value',minInterval:1},
+      grid:{left:40,right:10,bottom:50,top:10},
+      series:[{type:'line',data:sortedH.map(function(h){return hourMap[h]}),smooth:true,
+        lineStyle:{width:2},areaStyle:{opacity:0.1}}]
+    };
+    makeChart('trendChart',trendOpt);
+  } else {
+    if(charts.trendChart){charts.trendChart.dispose();delete charts.trendChart}
+  }
+
+  // sub detail page
+  document.getElementById('sub-detail').innerHTML=
+    '<tr><td>last refresh</td><td>'+(s.last_refresh||'--')+'</td></tr>'+
+    '<tr><td>status</td><td><span class="st '+(s.last_success?'st-ok':'st-err')+'">'+(s.last_success?'success':'fail')+'</span></td></tr>'+
+    '<tr><td>nodes</td><td>'+(s.node_count||0)+'</td></tr>'+
+    '<tr><td>file size</td><td>'+fmtB(s.file_size)+'</td></tr>'+
+    '<tr><td>success rate</td><td>'+(hist.length?Math.round(hist.filter(function(h){return h.success}).length/hist.length*100):0)+'%</td></tr>';
+
+  // api detail
+  document.getElementById('api-detail').innerHTML=
+    '<tr><td>total</td><td>'+(a.total_calls||0)+'</td></tr>'+
+    '<tr><td>last call</td><td>'+(a.last_call||'--')+'</td></tr>'+
+    '<tr><td>last model</td><td>'+(a.last_model||'--')+'</td></tr>'+
+    '<tr><td>last route</td><td>'+(a.last_route||'--')+'</td></tr>';
+
+  // ── ECharts: Status Code Distribution ──
+  if(ah.length){
+    var codeCount={};
+    ah.forEach(function(h){var c=String(h.status||200);codeCount[c]=(codeCount[c]||0)+1});
+    var codeKeys=Object.keys(codeCount).sort();
+    var statusOpt={
+      tooltip:{trigger:'axis'},
+      xAxis:{type:'category',data:codeKeys},
+      yAxis:{type:'value',minInterval:1},
+      grid:{left:40,right:10,bottom:30,top:10},
+      series:[{
+        type:'bar',data:codeKeys.map(function(k){return codeCount[k]}),
+        itemStyle:{color:function(p){
+          var v=parseInt(p.name);
+          if(v<300)return '#4a9';if(v<400)return '#ca3';return '#c44';
+        }}
+      }]
+    };
+    makeChart('statusChart',statusOpt);
+  } else {
+    if(charts.statusChart){charts.statusChart.dispose();delete charts.statusChart}
+  }
+
+  // ── ECharts: Latency Trend ──
+  if(ah.length){
+    var latData=ah.slice().reverse().slice(0,30);
+    var latOpt={
+      tooltip:{trigger:'axis'},
+      xAxis:{type:'category',data:latData.map(function(h,i){return i+1}),axisLabel:{fontSize:10}},
+      yAxis:{type:'value',name:'ms'},
+      grid:{left:40,right:10,bottom:30,top:10},
+      series:[{type:'bar',data:latData.map(function(h){return h.ms||0}),
+        itemStyle:{color:'#48a'}}]
+    };
+    makeChart('latencyChart',latOpt);
+  } else {
+    if(charts.latencyChart){charts.latencyChart.dispose();delete charts.latencyChart}
+  }
+
+  // api log table
+  var ahl=ah.slice().reverse().slice(0,50);
+  document.getElementById('api-log').innerHTML=ahl.length?ahl.map(function(h){
+    var st=h.status===200?'<span class="st st-ok">200</span>':
+            h.status>=400?'<span class="st st-err">'+h.status+'</span>':
+            '<span class="st st-warn">'+h.status+'</span>';
+    return '<tr><td style="color:var(--dim)">'+(h.time||'--')+'</td><td>'+(h.model||'?')+'</td>'+
+      '<td><span class="st '+(h.route==='deepseek'?'st-info':'st-warn')+'">'+(h.route||'--')+'</span></td>'+
+      '<td>'+st+'</td><td>'+(h.ms||0)+'</td><td>'+(h.in||0)+'/'+(h.out||0)+'</td></tr>';
+  }).join(''):'<tr><td colspan="6">no data</td></tr>';
+
+  // all events log
   var all=[];
   (a.history||[]).forEach(function(h){all.push({type:'API',time:h.time,d:(h.model||'?')+' -> '+h.route+' ['+h.status+'] '+(h.ms||0)+'ms',ok:h.status===200})});
   (s.history||[]).forEach(function(h){all.push({type:'SUB',time:h.time,d:h.msg||'--',ok:h.success})});
   all.sort(function(a,b){return(b.time||'').localeCompare(a.time||'')});
-  document.getElementById('all-log').innerHTML=all.length?all.slice(0,80).map(function(e){var st=e.ok?'<span class="st st-ok">ok</span>':'<span class="st st-err">err</span>';return'<tr><td style="color:#888">'+(e.time||'--')+'</td><td><span class="st '+(e.type==='API'?'st-info':'st-warn')+'">'+e.type+'</span></td><td>'+e.d+'</td><td>'+st+'</td></tr>'}).join(''):'<tr><td colspan="4">no data</td></tr>';
+  document.getElementById('all-log').innerHTML=all.length?all.slice(0,80).map(function(e){
+    var st=e.ok?'<span class="st st-ok">ok</span>':'<span class="st st-err">err</span>';
+    return '<tr><td style="color:var(--dim)">'+(e.time||'--')+'</td>'+
+      '<td><span class="st '+(e.type==='API'?'st-info':'st-warn')+'">'+e.type+'</span></td>'+
+      '<td>'+e.d+'</td><td>'+st+'</td></tr>';
+  }).join(''):'<tr><td colspan="4">no data</td></tr>';
 }
-function load(){fetch(API_URL).then(function(r){return r.json()}).then(function(d){D=d;render()}).catch(function(e){console.error(e)})}
+
+// ── Data load ──
+function load(){
+  fetch(API_URL).then(function(r){return r.json()}).then(function(d){D=d;render()}).catch(function(e){console.error(e)});
+}
 load();setInterval(load,30000);
+window.addEventListener('resize',resizeCharts);
+
+// re-render charts when page becomes visible (after switching tabs)
+document.addEventListener('visibilitychange',function(){if(!document.hidden)resizeCharts()});
 </script>
 </body>
 </html>
