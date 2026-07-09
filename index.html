@@ -73,6 +73,19 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 /* layout */
 .row{display:flex;gap:10px;margin-bottom:10px}.row>.panel{flex:1;margin-bottom:0}
 
+/* chat */
+.msg{margin-bottom:14px;display:flex;gap:8px}
+.msg-avatar{width:24px;height:24px;border-radius:3px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;color:var(--dim)}
+.msg-user .msg-avatar{background:#5a8fcf;color:#fff}
+.msg-assistant .msg-avatar{background:#4a9;color:#fff}
+.msg-body{flex:1;min-width:0}
+.msg-role{font-size:10px;color:var(--dim);margin-bottom:2px}
+.msg-content{white-space:pre-wrap;word-break:break-word;font-family:inherit}
+.msg-meta{font-size:10px;color:var(--dim);margin-top:4px}
+#chatInput:focus,#chatModel:focus,#chatTemp:focus,#chatMax:focus{outline:none;border-color:#5a8fcf}
+#chatSend:disabled{opacity:.5;cursor:not-allowed}
+#chatSend:hover:not(:disabled){background:#4a7fbf}
+
 /* responsive */
 @media(max-width:768px){:root{--sidebar-w:0px}.sidebar{display:none}.row{flex-direction:column}}
 </style>
@@ -92,6 +105,8 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
   <div class="tree">
     <div class="tree-section">Overview</div>
     <div class="tree-item active" data-page="summary">Summary</div>
+    <div class="tree-section">Tools</div>
+    <div class="tree-item" data-page="chat"><span class="ind ind-g"></span>chat</div>
     <div class="tree-section">Services</div>
     <div class="tree-item" data-page="sub"><span class="ind ind-g" id="nav-sub"></span>subscription</div>
     <div class="tree-item" data-page="api"><span class="ind ind-y" id="nav-api"></span>api-router</div>
@@ -158,12 +173,19 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
 <div class="page" id="page-api">
   <div class="row">
     <div class="panel">
-      <div class="panel-hdr"><span data-t="routes">Routes</span></div>
-      <div class="panel-body"><table class="kv">
+      <div class="panel-hdr">
+        <span data-t="quickConfig">Quick Config</span>
+        <span style="display:flex;gap:6px">
+          <span class="chat-mini-btn" id="cfgRevealBtn" data-t="reveal">Show</span>
+          <span class="chat-mini-btn" id="cfgCopyEnvBtn" data-t="copy">Copy env</span>
+        </span>
+      </div>
+      <div class="panel-body"><table class="kv" id="cfg-kv">
+        <tr><td data-t="baseUrl">Base URL</td><td style="font-family:monospace;word-break:break-all" id="cfg-url">https://router-api-router-jpdbcnzbno.cn-hangzhou.fcapp.run</td></tr>
+        <tr><td data-t="apiKey">API Key</td><td style="font-family:monospace" id="cfg-key">sk-••••••••••••••••••••</td></tr>
         <tr><td>deepseek</td><td>api.deepseek.com/anthropic</td></tr>
         <tr><td>qwen</td><td>dashscope.aliyuncs.com</td></tr>
-        <tr><td>rule</td><td>model contains "qwen" -> qwen, else -> deepseek</td></tr>
-        <tr><td>auth</td><td>x-api-key header</td></tr>
+        <tr><td data-t="rule">Rule</td><td>model contains "qwen" → qwen, else → deepseek</td></tr>
       </table></div>
     </div>
     <div class="panel">
@@ -186,6 +208,54 @@ body.dark .sidebar-hdr{background:#1a1a1a;border-color:#444}
     <div class="panel-body" style="overflow-x:auto"><table class="log">
       <thead><tr><th><span data-t="time">time</span></th><th><span data-t="model">model</span></th><th><span data-t="route">route</span></th><th><span data-t="status">status</span></th><th><span data-t="ms">ms</span></th><th><span data-t="tokens">tokens</span></th></tr></thead>
       <tbody id="api-log"><tr><td colspan="6">no data</td></tr></tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- Chat Playground -->
+<div class="page" id="page-chat">
+  <div class="panel">
+    <div class="panel-hdr">
+      <span data-t="chatTitle">Chat Playground</span>
+      <span style="font-weight:normal;color:var(--dim);font-size:10px" id="chatMeta">--</span>
+    </div>
+    <div class="panel-body" style="padding:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11px">
+      <label><span data-t="chatModelLabel">Model</span>:
+        <select id="chatModel" style="margin-left:4px;padding:2px 4px;background:var(--surface);color:var(--text);border:1px solid var(--border);font-family:inherit;font-size:11px">
+          <option value="deepseek-v4-pro">deepseek-v4-pro</option>
+          <option value="qwen3.7-max">qwen3.7-max</option>
+        </select>
+      </label>
+      <label><span data-t="chatTemp">Temp</span>:
+        <input id="chatTemp" type="number" value="0.7" min="0" max="2" step="0.1" style="width:50px;margin-left:4px;padding:2px 4px;background:var(--surface);color:var(--text);border:1px solid var(--border);font-family:inherit;font-size:11px">
+      </label>
+      <label><span data-t="chatMax">Max</span>:
+        <input id="chatMax" type="number" value="1024" min="1" max="8192" step="128" style="width:60px;margin-left:4px;padding:2px 4px;background:var(--surface);color:var(--text);border:1px solid var(--border);font-family:inherit;font-size:11px">
+      </label>
+      <button id="chatClear" style="cursor:pointer;padding:2px 10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);font-family:inherit;font-size:11px" data-t="chatClear">Clear</button>
+      <span style="flex:1"></span>
+      <span id="chatTokens" style="color:var(--dim)">0 tokens</span>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-hdr"><span data-t="chatConv">Conversation</span></div>
+    <div class="panel-body">
+      <div id="chatBox" style="padding:14px;max-height:calc(100vh - 320px);overflow-y:auto;min-height:240px">
+        <div id="chatEmpty" style="text-align:center;padding:60px 0;color:var(--dim);font-size:12px" data-t="chatHint">Type a message below to chat</div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding:8px;display:flex;gap:8px">
+        <textarea id="chatInput" rows="2" placeholder="" style="flex:1;resize:vertical;padding:6px 8px;background:var(--surface);color:var(--text);border:1px solid var(--border);font-family:inherit;font-size:12px;line-height:1.5"></textarea>
+        <button id="chatSend" style="cursor:pointer;padding:6px 16px;background:#5a8fcf;color:#fff;border:none;font-family:inherit;font-size:12px;font-weight:600" data-t="chatSend">Send</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-hdr"><span data-t="apiConfig">API Configuration</span></div>
+    <div class="panel-body"><table class="kv">
+      <tr><td>Base URL</td><td><code style="user-select:all">https://router-api-router-jpdbcnzbno.cn-hangzhou.fcapp.run</code> <button class="copy-btn" data-copy="https://router-api-router-jpdbcnzbno.cn-hangzhou.fcapp.run" style="cursor:pointer;padding:1px 6px;margin-left:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:10px" data-t="copy">Copy</button></td></tr>
+      <tr><td>API Key</td><td><code id="apiKeyMask" style="user-select:all">sk-xyFxflv...QqD_Q</code> <button class="copy-btn" data-copy="sk-xyFxflvroZlmoVhXE9AOmcQLXB_kJFjw7ZaONqUqD_Q" style="cursor:pointer;padding:1px 6px;margin-left:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:10px" data-t="copy">Copy</button> <button id="apiKeyReveal" style="cursor:pointer;padding:1px 6px;margin-left:4px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:10px" data-t="reveal">Reveal</button></td></tr>
+      <tr><td data-t="shellEnv">Shell env</td><td><button class="copy-btn" data-copy='export ANTHROPIC_BASE_URL="https://router-api-router-jpdbcnzbno.cn-hangzhou.fcapp.run"
+export ANTHROPIC_API_KEY="sk-xyFxflvroZlmoVhXE9AOmcQLXB_kJFjw7ZaONqUqD_Q"' style="cursor:pointer;padding:2px 10px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px" data-t="copyShell">Copy 2-line export</button></td></tr>
     </table></div>
   </div>
 </div>
@@ -231,6 +301,22 @@ var LANG={
     subTitle:'个人工作台',
     last50:'最近 50 次',
     successRate:'成功率',
+    chat:'对话',
+    chatTitle:'AI 对话',
+    chatConfig:'API 配置',
+    chatSend:'发送',
+    chatClear:'清空',
+    chatPlaceholder:'输入消息，Cmd/Ctrl + Enter 发送',
+    chatEmpty:'开始一段对话吧 — 直接调用 DeepSeek 或 Qwen',
+    chatThinking:'思考中...',
+    chatMeta:'路由信息',
+    chatTokens:'累计',
+    apiKey:'API Key',
+    baseUrl:'Base URL',
+    reveal:'显示',hide:'隐藏',copy:'复制',copied:'已复制',
+    temperature:'温度',maxTokens:'最大 Tokens',
+    envVars:'环境变量',
+    quickConfig:'快捷配置',
   },
   en:{
     overview:'Overview',services:'Services',system:'System',sub:'Subscription','api':'API Router',
@@ -253,6 +339,22 @@ var LANG={
     subTitle:'Personal Workspace',
     last50:'last 50',
     successRate:'Success Rate',
+    chat:'Chat',
+    chatTitle:'AI Chat',
+    chatConfig:'API Config',
+    chatSend:'Send',
+    chatClear:'Clear',
+    chatPlaceholder:'Type message, Cmd/Ctrl + Enter to send',
+    chatEmpty:'Start a conversation — direct call to DeepSeek or Qwen',
+    chatThinking:'Thinking...',
+    chatMeta:'Routed',
+    chatTokens:'Total',
+    apiKey:'API Key',
+    baseUrl:'Base URL',
+    reveal:'Show',hide:'Hide',copy:'Copy',copied:'Copied',
+    temperature:'Temperature',maxTokens:'Max Tokens',
+    envVars:'Env Vars',
+    quickConfig:'Quick Config',
   }
 };
 
@@ -507,6 +609,114 @@ function render(){
       '<td>'+e.d+'</td><td>'+st+'</td></tr>';
   }).join(''):'<tr><td colspan="4">'+t('no data')+'</td></tr>';
 }
+
+// ── Chat Playground ──
+var ROUTER_URL="https://router-api-router-jpdbcnzbno.cn-hangzhou.fcapp.run";
+var ROUTER_KEY="sk-xyFxflvroZlmoVhXE9AOmcQLXB_kJFjw7ZaONqUqD_Q";
+var chatMessages=[];
+var chatTotalTokens=0;
+
+function renderChatBox(){
+  var box=document.getElementById('chatBox');
+  var empty=document.getElementById('chatEmpty');
+  if(!chatMessages.length){empty.style.display='block';return}
+  empty.style.display='none';
+  box.innerHTML=chatMessages.map(function(m){
+    var isUser=m.role==='user';
+    var bg=isUser?'#5a8fcf':(darkMode()?'#333':'#f0f0f0');
+    var fg=isUser?'#fff':'var(--text)';
+    var align=isUser?'flex-end':'flex-start';
+    var content=escapeHtml(typeof m.content==='string'?m.content:JSON.stringify(m.content));
+    content=content.replace(/\n/g,'<br>');
+    return '<div style="display:flex;justify-content:'+align+';margin-bottom:10px">'+
+      '<div style="max-width:80%;padding:8px 12px;background:'+bg+';color:'+fg+';border-radius:8px;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word">'+content+'</div>'+
+      '</div>';
+  }).join('');
+  box.scrollTop=box.scrollHeight;
+}
+
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+function chatSend(){
+  var input=document.getElementById('chatInput');
+  var text=input.value.trim();
+  if(!text)return;
+  var model=document.getElementById('chatModel').value;
+  var temperature=parseFloat(document.getElementById('chatTemp').value)||0.7;
+  var maxTokens=parseInt(document.getElementById('chatMax').value)||1024;
+  var sendBtn=document.getElementById('chatSend');
+
+  chatMessages.push({role:'user',content:text});
+  renderChatBox();
+  input.value='';
+  sendBtn.disabled=true;sendBtn.textContent='...';
+
+  // add placeholder assistant message
+  chatMessages.push({role:'assistant',content:t('chatThinking')});
+  renderChatBox();
+
+  var t0=Date.now();
+  fetch(ROUTER_URL+'/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':ROUTER_KEY,'anthropic-version':'2023-06-01'},
+    body:JSON.stringify({
+      model:model,max_tokens:maxTokens,temperature:temperature,
+      messages:chatMessages.slice(0,-1).map(function(m){return{role:m.role,content:m.content}})
+    })
+  }).then(function(r){return r.json()}).then(function(d){
+    var elapsed=Date.now()-t0;
+    var reply='';
+    if(d.content&&d.content.length){
+      reply=d.content.map(function(c){return c.text||''}).join('');
+    } else if(d.error){
+      reply='[error] '+(d.error.message||JSON.stringify(d.error));
+    } else {
+      reply='[empty response] '+JSON.stringify(d).substring(0,200);
+    }
+    chatMessages[chatMessages.length-1]={role:'assistant',content:reply};
+    var usage=d.usage||{};
+    var tin=usage.input_tokens||0,tout=usage.output_tokens||0;
+    chatTotalTokens+=tin+tout;
+    document.getElementById('chatMeta').textContent=(d._routed_by||model)+' · '+elapsed+'ms · '+tin+'↑ '+tout+'↓';
+    document.getElementById('chatTokens').textContent=chatTotalTokens+' tokens';
+    renderChatBox();
+  }).catch(function(e){
+    chatMessages[chatMessages.length-1]={role:'assistant',content:'[network error] '+e.message};
+    renderChatBox();
+  }).finally(function(){
+    sendBtn.disabled=false;sendBtn.textContent=t('chatSend');
+  });
+}
+
+document.getElementById('chatSend').onclick=chatSend;
+document.getElementById('chatInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();chatSend()}
+});
+document.getElementById('chatClear').onclick=function(){
+  chatMessages=[];chatTotalTokens=0;
+  document.getElementById('chatMeta').textContent='--';
+  document.getElementById('chatTokens').textContent='0 tokens';
+  renderChatBox();
+};
+
+// ── Copy buttons + API key reveal ──
+document.querySelectorAll('.copy-btn').forEach(function(btn){
+  btn.onclick=function(){
+    var text=btn.getAttribute('data-copy');
+    navigator.clipboard.writeText(text).then(function(){
+      var old=btn.textContent;
+      btn.textContent=t('copied');
+      setTimeout(function(){btn.textContent=old},1200);
+    });
+  };
+});
+document.getElementById('apiKeyReveal').onclick=function(){
+  var el=document.getElementById('apiKeyMask');
+  var full='sk-xyFxflvroZlmoVhXE9AOmcQLXB_kJFjw7ZaONqUqD_Q';
+  var isMasked=el.textContent.indexOf('...')>=0;
+  el.textContent=isMasked?full:'sk-xyFxflv...QqD_Q';
+  this.textContent=isMasked?t('hide'):t('reveal');
+};
 
 // ── Data load ──
 function load(){
